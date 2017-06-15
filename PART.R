@@ -1,5 +1,5 @@
 # library(devtools)
-# install_github("VirtuaGod/AnaliseFI")
+# install_github("PortfolioAnalyser/PART")
 
 # Some useful keyboard shortcuts for package authoring:
 #
