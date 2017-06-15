@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "# library(devtools)\n# install_github(\"PortfolioAnalyser/PART\")\n\n# Some useful keyboard shortcuts for package authoring:\n#\n#   Build and Reload Package:  'Ctrl + Shift + B'\n#   Check Package:             'Ctrl + Shift + E'\n#   Test Package:              'Ctrl + Shift + T\n\n# A função getFI_best() tem um argumento \"Begin_End\" com o formato \"2007-12-31/2017-01-20\".# Caso não seja colocada tem default em\n# 1999-12-31/2017-12-31. Cria objectos XTS de todos os Morningstar Ids (versão \"pura\" das cotações da morningstar) e um objecto \"Fundos\"\n# em dataframe, com todas as cotações dos fundos alinhadas. É uma versão \"alterada\" das cotações que acrescenta dias, de forma alinhar\n# as cotações). Usa a feed do Best por isso só funciona com fundos que eles comercializam.\n\ngetFI_best <- function(x, Begin_End = \"1999-12-31/2017-12-31\"){\n  Fundos <- as.data.frame(timeBasedSeq(Begin_End))\n  colnames(Fundos) <- (\"date\")\n  Fundos$date <- as.Date(Fundos$date, format = \"%Y-%m-%d\")\n  Begin <- str_sub(Begin_End, start = 1, end = 10)\n  Begin <- as.Date(Begin, format = \"%Y-%m-%d\")\n  Begin <- strptime(as.character(Begin), \"%Y-%m-%d\")\n  Begin <- format(Begin, \"%m/%d/%Y\")\n\n  for (i in x) {\n    fund <- read.csv2(paste0(\"https://lt.morningstar.com/api/rest.svc/timeseries_price/okhysb8aoh?id=\",i,\n                             \"&currencyId=BAS&idtype=Morningstar&frequency=daily&startDate=\", Begin,\"&outputType=CSV\"))\n    fund <- fund[, 1:2]\n    fund$date <- as.Date(fund$date, format = \"%Y-%m-%d\")\n    colnames(fund) <- paste(c(\"date\", i))\n    Fundos <- merge(Fundos, fund, by = \"date\", all.x = TRUE)\n    fund   <- xts(fund[2:ncol(fund)], order.by = fund[, 1])\n    fund   <- fund[Begin_End, ]\n    assign('Fundos', Fundos, envir = .GlobalEnv)\n    assign(i, fund, envir = .GlobalEnv)\n    rm(fund)\n  }\n  Fundos <- na.locf(Fundos)\n  Fundos <- xts(Fundos[2:ncol(Fundos)], as.Date(Fundos[, 1], format = \"%Y-%m-%d\"))\n  Fundos <- Fundos[.indexwday(Fundos) %in% 1:5] # Para excluir os fim de semana\n  Fundos <- as.data.frame(Fundos)\n  date <- row.names(Fundos)\n  Fundos <- cbind(date, Fundos)\n  assign('Fundos', Fundos, envir = .GlobalEnv)\n}\n\n",
+    "created" : 1497486055502.000,
+    "dirty" : false,
+    "encoding" : "ISO8859-1",
+    "folds" : "",
+    "hash" : "80259975",
+    "id" : "154C3C4E",
+    "lastKnownWriteTime" : 1497486949,
+    "last_content_update" : 1497486949472,
+    "path" : "C:/Users/a/Dropbox/_Programacao/GitHub/PART/PART.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
